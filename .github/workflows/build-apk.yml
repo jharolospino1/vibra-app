@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: vibra-android
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vibra-debug-apk
-          path: vibra-android/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Publicar como Release público (enlace directo para cualquiera)
         uses: softprops/action-gh-release@v2
@@ -45,7 +42,7 @@ jobs:
           tag_name: latest
           name: Vibra (última versión)
           body: APK generado automáticamente desde el código. Instálalo permitiendo "orígenes desconocidos".
-          files: vibra-android/app/build/outputs/apk/debug/app-debug.apk
+          files: app/build/outputs/apk/debug/app-debug.apk
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
