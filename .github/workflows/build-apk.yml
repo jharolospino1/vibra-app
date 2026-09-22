@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vibra-android
     steps:
       - uses: actions/checkout@v4
 
@@ -17,24 +20,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Ubicar la carpeta del proyecto Android
-        id: find
-        run: |
-          if [ -f "settings.gradle.kts" ]; then
-            echo "dir=." >> "$GITHUB_OUTPUT"
-          elif [ -f "vibra-android/settings.gradle.kts" ]; then
-            echo "dir=vibra-android" >> "$GITHUB_OUTPUT"
-          else
-            DIR=$(dirname "$(find . -name settings.gradle.kts -not -path './*/node_modules/*' | head -n 1)")
-            echo "dir=$DIR" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Dar permiso a gradlew
-        working-directory: ${{ steps.find.outputs.dir }}
         run: chmod +x gradlew || true
 
       - name: Generar gradlew si falta
-        working-directory: ${{ steps.find.outputs.dir }}
         run: |
           if [ ! -f gradlew ]; then
             gradle wrapper --gradle-version 8.7
@@ -42,14 +31,13 @@ jobs:
           fi
 
       - name: Compilar APK de depuración
-        working-directory: ${{ steps.find.outputs.dir }}
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Subir el APK (solo para ti, requiere cuenta de GitHub)
         uses: actions/upload-artifact@v4
         with:
           name: vibra-debug-apk
-          path: ${{ steps.find.outputs.dir }}/app/build/outputs/apk/debug/app-debug.apk
+          path: vibra-android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Publicar como Release público (enlace directo para cualquiera)
         uses: softprops/action-gh-release@v2
@@ -57,7 +45,7 @@ jobs:
           tag_name: latest
           name: Vibra (última versión)
           body: APK generado automáticamente desde el código. Instálalo permitiendo "orígenes desconocidos".
-          files: ${{ steps.find.outputs.dir }}/app/build/outputs/apk/debug/app-debug.apk
+          files: vibra-android/app/build/outputs/apk/debug/app-debug.apk
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
